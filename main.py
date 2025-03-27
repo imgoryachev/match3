@@ -145,7 +145,7 @@ FPS = 60
 # Новая переменная для управления анимацией
 animation_phase = None  # Возможные значения: None, "remove", "drop", "fill"
 animation_timer = 0  # Таймер для анимации
-ANIMATION_DELAY = 500  # Задержка в миллисекундах (0.5 секунды)
+ANIMATION_DELAY = 300  # Задержка в миллисекундах (0.5 секунды)
 
 # Переменные для хранения выбранных тайлов
 selected_tile = None
@@ -204,7 +204,15 @@ while running:
     elif animation_phase == "fill":
         if current_time - animation_timer >= ANIMATION_DELAY:
             fill_empty_tiles()
-            animation_phase = None  # Завершаем анимацию
+
+            # Проверяем новые совпадения после заполнения
+            new_matches = check_matches()
+            if new_matches:
+                matches = new_matches
+                animation_phase = "remove"  # Удаляем новые совпадения
+                animation_timer = current_time
+            else:
+                animation_phase = None  # Завершаем анимацию
 
     # Отрисовка фона
     screen.fill(WHITE)
