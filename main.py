@@ -5,7 +5,7 @@ import random
 pygame.init()
 
 # Настройки экрана
-WIDTH, HEIGHT = 400, 600  # Ширина и высота окна
+WIDTH, HEIGHT = 520, 520  # Ширина и высота окна
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Три в ряд")
 
@@ -14,8 +14,8 @@ WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 
 # Настройки игрового поля
-GRID_WIDTH, GRID_HEIGHT = 8, 12  # Размер сетки (столбцы x строки)
-TILE_SIZE = 50  # Размер одной ячейки
+GRID_WIDTH, GRID_HEIGHT = 8, 8  # Размер сетки (столбцы x строки)
+TILE_SIZE = 65  # Размер одной ячейки
 
 # Функция для создания игрового поля без начальных совпадений
 def create_grid():
@@ -145,7 +145,7 @@ FPS = 60
 # Новая переменная для управления анимацией
 animation_phase = None  # Возможные значения: None, "remove", "drop", "fill"
 animation_timer = 0  # Таймер для анимации
-ANIMATION_DELAY = 300  # Задержка в миллисекундах (0.5 секунды)
+ANIMATION_DELAY = 300  # Задержка в миллисекундах (0.3 секунды)
 
 # Переменные для хранения выбранных тайлов
 selected_tile = None
