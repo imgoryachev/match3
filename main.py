@@ -28,7 +28,9 @@ def draw_grid():
             color = None
 
             # Определение цвета в зависимости от значения тайла
-            if tile_value == 1:
+            if tile_value == 0:  # Пустая ячейка
+                color = WHITE
+            elif tile_value == 1:
                 color = (255, 0, 0)  # Красный
             elif tile_value == 2:
                 color = (0, 255, 0)  # Зелёный
@@ -48,6 +50,67 @@ def get_tile_position(mouse_x, mouse_y):
     col = mouse_x // TILE_SIZE
     row = mouse_y // TILE_SIZE
     return row, col
+
+# Функция для проверки совпадений
+def check_matches():
+    matches = []
+
+    # Проверка горизонтальных совпадений
+    for row in range(GRID_HEIGHT):
+        for col in range(GRID_WIDTH - 2):  # Минимум три элемента подряд
+            if grid[row][col] != 0 and grid[row][col] == grid[row][col + 1] == grid[row][col + 2]:
+                # Найдено совпадение
+                match = [(row, col), (row, col + 1), (row, col + 2)]
+                # Проверяем, есть ли продолжение совпадения
+                for i in range(col + 3, GRID_WIDTH):
+                    if grid[row][i] == grid[row][col]:
+                        match.append((row, i))
+                    else:
+                        break
+                matches.append(match)
+
+    # Проверка вертикальных совпадений
+    for col in range(GRID_WIDTH):
+        for row in range(GRID_HEIGHT - 2):  # Минимум три элемента подряд
+            if grid[row][col] != 0 and grid[row][col] == grid[row + 1][col] == grid[row + 2][col]:
+                # Найдено совпадение
+                match = [(row, col), (row + 1, col), (row + 2, col)]
+                # Проверяем, есть ли продолжение совпадения
+                for i in range(row + 3, GRID_HEIGHT):
+                    if grid[i][col] == grid[row][col]:
+                        match.append((i, col))
+                    else:
+                        break
+                matches.append(match)
+
+    return matches
+
+# Функция для удаления совпадений
+def remove_matches(matches):
+    for match in matches:
+        for row, col in match:
+            grid[row][col] = 0  # Удаляем элемент
+
+# Функция для сдвига элементов вниз
+def drop_tiles():
+    for col in range(GRID_WIDTH):
+        empty_rows = []
+        for row in range(GRID_HEIGHT - 1, -1, -1):  # Проходим снизу вверх
+            if grid[row][col] == 0:
+                empty_rows.append(row)
+            elif empty_rows:
+                # Перемещаем элемент вниз
+                new_row = empty_rows.pop(0)
+                grid[new_row][col] = grid[row][col]
+                grid[row][col] = 0
+                empty_rows.append(row)
+
+# Функция для заполнения пустых ячеек новыми элементами
+def fill_empty_tiles():
+    for row in range(GRID_HEIGHT):
+        for col in range(GRID_WIDTH):
+            if grid[row][col] == 0:
+                grid[row][col] = random.randint(1, 5)
 
 # Часы для контроля FPS
 clock = pygame.time.Clock()
@@ -79,6 +142,17 @@ while running:
                     if (abs(row - prev_row) + abs(col - prev_col)) == 1:  # Проверка соседства
                         # Меняем местами значения тайлов
                         grid[prev_row][prev_col], grid[row][col] = grid[row][col], grid[prev_row][prev_col]
+
+                        # Проверяем совпадения после перемещения
+                        matches = check_matches()
+                        if matches:
+                            remove_matches(matches)
+                            drop_tiles()
+                            fill_empty_tiles()
+                        else:
+                            # Если совпадений нет, возвращаем тайлы на место
+                            grid[prev_row][prev_col], grid[row][col] = grid[row][col], grid[prev_row][prev_col]
+
                     # Сбрасываем выбор
                     selected_tile = None
 
