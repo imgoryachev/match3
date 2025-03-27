@@ -17,8 +17,34 @@ BLACK = (0, 0, 0)
 GRID_WIDTH, GRID_HEIGHT = 8, 12  # Размер сетки (столбцы x строки)
 TILE_SIZE = 50  # Размер одной ячейки
 
+# Функция для создания игрового поля без начальных совпадений
+def create_grid():
+    grid = [[random.randint(1, 5) for _ in range(GRID_WIDTH)] for _ in range(GRID_HEIGHT)]
+    
+    # Проверка на наличие совпадений
+    def has_matches():
+        # Проверка горизонтальных совпадений
+        for row in range(GRID_HEIGHT):
+            for col in range(GRID_WIDTH - 2):
+                if grid[row][col] != 0 and grid[row][col] == grid[row][col + 1] == grid[row][col + 2]:
+                    return True
+
+        # Проверка вертикальных совпадений
+        for col in range(GRID_WIDTH):
+            for row in range(GRID_HEIGHT - 2):
+                if grid[row][col] != 0 and grid[row][col] == grid[row + 1][col] == grid[row + 2][col]:
+                    return True
+
+        return False
+
+    # Пересоздаём поле, пока есть совпадения
+    while has_matches():
+        grid = [[random.randint(1, 5) for _ in range(GRID_WIDTH)] for _ in range(GRID_HEIGHT)]
+
+    return grid
+
 # Создание игрового поля
-grid = [[random.randint(1, 5) for _ in range(GRID_WIDTH)] for _ in range(GRID_HEIGHT)]
+grid = create_grid()
 
 # Функция для отрисовки игрового поля
 def draw_grid():
@@ -116,18 +142,25 @@ def fill_empty_tiles():
 clock = pygame.time.Clock()
 FPS = 60
 
+# Новая переменная для управления анимацией
+animation_phase = None  # Возможные значения: None, "remove", "drop", "fill"
+animation_timer = 0  # Таймер для анимации
+ANIMATION_DELAY = 500  # Задержка в миллисекундах (0.5 секунды)
+
 # Переменные для хранения выбранных тайлов
 selected_tile = None
 
 # Основной игровой цикл
 running = True
 while running:
+    current_time = pygame.time.get_ticks()
+
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
 
         # Обработка кликов мыши
-        if event.type == pygame.MOUSEBUTTONDOWN:
+        if event.type == pygame.MOUSEBUTTONDOWN and animation_phase is None:
             mouse_x, mouse_y = event.pos
             row, col = get_tile_position(mouse_x, mouse_y)
 
@@ -146,15 +179,32 @@ while running:
                         # Проверяем совпадения после перемещения
                         matches = check_matches()
                         if matches:
-                            remove_matches(matches)
-                            drop_tiles()
-                            fill_empty_tiles()
+                            animation_phase = "remove"  # Переходим к фазе удаления
+                            animation_timer = current_time
                         else:
                             # Если совпадений нет, возвращаем тайлы на место
                             grid[prev_row][prev_col], grid[row][col] = grid[row][col], grid[prev_row][prev_col]
 
                     # Сбрасываем выбор
                     selected_tile = None
+
+    # Логика анимации
+    if animation_phase == "remove":
+        if current_time - animation_timer >= ANIMATION_DELAY:
+            remove_matches(matches)
+            animation_phase = "drop"
+            animation_timer = current_time
+
+    elif animation_phase == "drop":
+        if current_time - animation_timer >= ANIMATION_DELAY:
+            drop_tiles()
+            animation_phase = "fill"
+            animation_timer = current_time
+
+    elif animation_phase == "fill":
+        if current_time - animation_timer >= ANIMATION_DELAY:
+            fill_empty_tiles()
+            animation_phase = None  # Завершаем анимацию
 
     # Отрисовка фона
     screen.fill(WHITE)
