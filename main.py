@@ -43,9 +43,18 @@ def draw_grid():
             pygame.draw.rect(screen, color, (col * TILE_SIZE, row * TILE_SIZE, TILE_SIZE, TILE_SIZE))
             pygame.draw.rect(screen, BLACK, (col * TILE_SIZE, row * TILE_SIZE, TILE_SIZE, TILE_SIZE), 2)
 
+# Функция для получения координат тайла по позиции мыши
+def get_tile_position(mouse_x, mouse_y):
+    col = mouse_x // TILE_SIZE
+    row = mouse_y // TILE_SIZE
+    return row, col
+
 # Часы для контроля FPS
 clock = pygame.time.Clock()
 FPS = 60
+
+# Переменные для хранения выбранных тайлов
+selected_tile = None
 
 # Основной игровой цикл
 running = True
@@ -54,11 +63,35 @@ while running:
         if event.type == pygame.QUIT:
             running = False
 
+        # Обработка кликов мыши
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            mouse_x, mouse_y = event.pos
+            row, col = get_tile_position(mouse_x, mouse_y)
+
+            # Проверяем, что клик был внутри игрового поля
+            if 0 <= row < GRID_HEIGHT and 0 <= col < GRID_WIDTH:
+                if selected_tile is None:
+                    # Выбираем первый тайл
+                    selected_tile = (row, col)
+                else:
+                    # Выбираем второй тайл и проверяем соседство
+                    prev_row, prev_col = selected_tile
+                    if (abs(row - prev_row) + abs(col - prev_col)) == 1:  # Проверка соседства
+                        # Меняем местами значения тайлов
+                        grid[prev_row][prev_col], grid[row][col] = grid[row][col], grid[prev_row][prev_col]
+                    # Сбрасываем выбор
+                    selected_tile = None
+
     # Отрисовка фона
     screen.fill(WHITE)
 
     # Отрисовка игрового поля
     draw_grid()
+
+    # Подсветка выбранного тайла
+    if selected_tile is not None:
+        row, col = selected_tile
+        pygame.draw.rect(screen, (255, 255, 255), (col * TILE_SIZE, row * TILE_SIZE, TILE_SIZE, TILE_SIZE), 4)
 
     # Обновление экрана
     pygame.display.flip()
