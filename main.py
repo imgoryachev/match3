@@ -57,15 +57,15 @@ def draw_grid():
             if tile_value == 0:  # Пустая ячейка
                 color = WHITE
             elif tile_value == 1:
-                color = (255, 0, 0)  # Красный
+                color = (246, 69, 69)  # Красный
             elif tile_value == 2:
-                color = (0, 255, 0)  # Зелёный
+                color = (95, 241, 28)  # Зелёный
             elif tile_value == 3:
-                color = (0, 0, 255)  # Синий
+                color = (28, 110, 241)  # Синий
             elif tile_value == 4:
-                color = (255, 255, 0)  # Жёлтый
+                color = (246, 239, 67)  # Жёлтый
             elif tile_value == 5:
-                color = (255, 0, 255)  # Фиолетовый
+                color = (205, 85, 228)  # Фиолетовый
 
             # Отрисовка тайла
             pygame.draw.rect(screen, color, (col * TILE_SIZE, row * TILE_SIZE, TILE_SIZE, TILE_SIZE))
